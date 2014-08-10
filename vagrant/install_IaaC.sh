@@ -16,3 +16,8 @@ sudo dpkg -i ${vagrant_deb}
 
 ## add box
 vagrant box add ubuntu_server_14.04 https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box
+
+## install ansible
+sudo apt-add-repository ppa:ansible/ansible
+sudo apt-get update
+sudo apt-get install -y ansible
