@@ -7,6 +7,8 @@ openssh-server
 git
 language-pack-ja
 language-pack-ja-base
+subversion
+screen
 '
 sudo apt-get install -y ${pkgs}
 
