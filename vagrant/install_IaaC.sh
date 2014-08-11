@@ -21,3 +21,6 @@ vagrant box add ubuntu_server_14.04 https://cloud-images.ubuntu.com/vagrant/trus
 sudo apt-add-repository ppa:ansible/ansible
 sudo apt-get update
 sudo apt-get install -y ansible
+
+## setup ssh
+vagrant ssh-config >> ${HOME}/.ssh/config
