@@ -1,1 +1,98 @@
 # tasks file can include smaller files if warranted
+
+## Install mysql pkg using apt-get
+- name: apt-get install mysql-server libmysqld-dev python-mysqldb
+  apt: pkg={{ item }}
+  with_items:
+    - mysql-server
+    - libmysqld-dev
+    - python-mysqldb
+
+## Create DB for redmine
+- name: Create Database for redmine
+  mysql_db: db={{ redmine_db_name }} state=present encoding=utf8
+
+## Create DB User for redmine
+- name: Create Database User for redemine
+  mysql_user: >
+    name={{ redmine_db_user }}
+    password="{{ redmine_db_passwd }}"
+    priv={{ redmine_db_name }}.*:ALL
+    state=present
+
+## Install ruby1.9.3
+- name: apt-get install ruby1.9.3
+  apt: pkg={{ item }}
+  with_items:
+    - ruby1.9.3
+
+##
+- name: gem install bundler
+  gem: name=bundler state=latest user_install=False
+- name: gem install json -v 1.8.1
+  gem: name=json version=1.8.1 state=present user_install=False
+- name: gem install mysql2 -v 0.3.16
+  gem: name=mysql2 version=0.3.16 state=present user_install=False
+
+##
+- name: wget redmine-{{ redmine_ver }}.
+  get_url: url="http://www.redmine.org/releases/redmine-{{ redmine_ver }}.tar.gz" dest="/var/tmp/redmine-{{ redmine_ver }}.tar.gz"
+- name: tar zxvf redmine-{{ redmine_ver }}.
+  command: tar zxvf redmine-{{ redmine_ver }}.tar.gz chdir=/var/tmp creates={{ redmine_home }}-{{ redmine_ver }}
+- name: mv redmine-{{ redmine_ver }}
+  command: mv redmine-{{ redmine_ver }} /opt chdir=/var/tmp creates={{ redmine_home }}-{{ redmine_ver }}
+- name: ln -s redmine-{{ redmine_ver }}
+  file: src={{ redmine_home }}-{{ redmine_ver }} dest={{ redmine_home }} state=link
+
+##
+- name: Template config/database.yml
+  template: src=database.yml.j2 dest={{ redmine_home }}/config/database.yml mode=0644
+
+##
+- name: redmine install
+  shell: bundle install --without development test postgresql sqlite rmagick chdir={{ redmine_home }} removes={{ redmine_home }}
+- name: rake generate_secret_token
+  shell: rake generate_secret_token chdir={{ redmine_home }}
+- name: RAILS_ENV=production rake db:migrate
+  shell: "bundle exec rake db:migrate RAILS_ENV=production chdir={{ redmine_home }}"
+
+##
+- name: mkdir tmp public/plugin_assets
+  file: path={{ redmine_home }}/{{ item }} state=directory
+  with_items:
+    - tmp
+    - public/plugin_assets
+
+- name: set parmission
+  file: path={{ redmine_home }}/{{ item }} state=directory owner=www-data group=www-data mode=0755 recurse=yes
+  with_items:
+    - files
+    - log
+    - tmp
+    - public/plugin_assets
+
+##
+- name: apt-get install -y apache2 libapache2-mod-passenger libapache2-mod-svn
+  apt: pkg={{ item }}
+  with_items:
+    - apache2
+    - libapache2-mod-passenger
+    - libapache2-mod-svn
+
+- name: ln -s {{ redmine_home }}/public/ /var/www/redmine
+  file: src={{ redmine_home }}/public/ dest=/var/www/redmine state=link
+
+- name: Template 000-default.conf.j2
+  file: path=/etc/apache2/sites-available/000-default.conf state=absent
+- template: src=000-default.conf.j2 dest=/etc/apache2/sites-available/000-default.conf mode=0644 owner=root group=root
+
+- name: Template dav_svn.conf.j2
+  file: path=/etc/apache2/mods-available/dav_svn.conf state=absent
+- template: src=dav_svn.conf.j2 dest=/etc/apache2/mods-available/dav_svn.conf mode=0644 owner=root group=root
+
+- name: Restart Apache2
+  service: name=apache2 state=restarted
+
+## for SVN
+- name: mkdir /var/svn
+  file: path=/var/svn state=directory owner=www-data group=www-data mode=0755
