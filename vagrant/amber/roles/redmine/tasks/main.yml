@@ -96,3 +96,8 @@
 ## for SVN
 - name: mkdir /var/svn
   file: path=/var/svn state=directory owner=www-data group=www-data mode=0755
+#TODO setup svndir
+#TODO setup pre-commit
+
+#TODO migretion svn
+#TODO migretion redmine
