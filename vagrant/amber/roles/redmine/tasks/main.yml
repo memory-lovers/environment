@@ -93,8 +93,6 @@
 - name: Copy dav_svn.conf
   copy: src=dav_svn.conf dest=/etc/apache2/mods-available/dav_svn.conf mode=0644 owner=root group=root
   notify: restart_apache
-
-#TODO setup svndir
 #TODO setup pre-commit
 
 #TODO migretion svn
