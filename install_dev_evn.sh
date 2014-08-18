@@ -2,13 +2,14 @@
 
 ## install primitive pkgs
 pkgs='
-vim
-openssh-server
+cifs-utils
 git
 language-pack-ja
 language-pack-ja-base
-subversion
+openssh-server
 screen
+subversion
+vim
 '
 sudo apt-get install -y ${pkgs}
 
