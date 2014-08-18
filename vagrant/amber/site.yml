@@ -1,0 +1,11 @@
+# master playbook
+- name: Install_Redmine
+  hosts: 192.168.0.201
+  user: vagrant
+  sudo: yes
+  roles:
+    - redmine
+  vars_prompt:
+    - name: "redmine_db_passwd"
+      prompt: "Please enter MySQL wordpress user password"
+      default: "redmine"

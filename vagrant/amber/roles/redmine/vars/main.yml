@@ -1,0 +1,6 @@
+# variables associated with this role
+redmine_db_name: redmine
+redmine_db_user: redmine
+
+redmine_ver: 2.5.1
+redmine_home: /opt/redmine
