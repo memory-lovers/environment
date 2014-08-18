@@ -82,20 +82,18 @@
 - name: ln -s {{ redmine_home }}/public/ /var/www/redmine
   file: src={{ redmine_home }}/public/ dest=/var/www/redmine state=link
 
-- name: Template 000-default.conf.j2
-  file: path=/etc/apache2/sites-available/000-default.conf state=absent
-- template: src=000-default.conf.j2 dest=/etc/apache2/sites-available/000-default.conf mode=0644 owner=root group=root
-
-- name: Template dav_svn.conf.j2
-  file: path=/etc/apache2/mods-available/dav_svn.conf state=absent
-- template: src=dav_svn.conf.j2 dest=/etc/apache2/mods-available/dav_svn.conf mode=0644 owner=root group=root
-
-- name: Restart Apache2
-  service: name=apache2 state=restarted
+- name: Template 000-default.conf
+  copy: src=000-default.conf dest=/etc/apache2/sites-available/000-default.conf mode=0644 owner=root group=root
+  notify: restart_apache
 
 ## for SVN
 - name: mkdir /var/svn
   file: path=/var/svn state=directory owner=www-data group=www-data mode=0755
+
+- name: Copy dav_svn.conf
+  copy: src=dav_svn.conf dest=/etc/apache2/mods-available/dav_svn.conf mode=0644 owner=root group=root
+  notify: restart_apache
+
 #TODO setup svndir
 #TODO setup pre-commit
 
