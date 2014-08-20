@@ -72,28 +72,36 @@
     - public/plugin_assets
 
 ##
-- name: apt-get install -y apache2 libapache2-mod-passenger libapache2-mod-svn
+- name: apt-get install -y apache2 libapache2-mod-passenger
   apt: pkg={{ item }}
   with_items:
     - apache2
     - libapache2-mod-passenger
-    - libapache2-mod-svn
 
 - name: ln -s {{ redmine_home }}/public/ /var/www/redmine
   file: src={{ redmine_home }}/public/ dest=/var/www/redmine state=link
 
-- name: Template 000-default.conf
+- name: Copy 000-default.conf
   copy: src=000-default.conf dest=/etc/apache2/sites-available/000-default.conf mode=0644 owner=root group=root
   notify: restart_apache
 
 ## for SVN
+- name: apt-get install -y subversion libapache2-mod-svn
+  apt: pkg={{ item }}
+  with_items:
+    - subversion
+    - libapache2-mod-svn
+
 - name: mkdir /var/svn
   file: path=/var/svn state=directory owner=www-data group=www-data mode=0755
 
 - name: Copy dav_svn.conf
   copy: src=dav_svn.conf dest=/etc/apache2/mods-available/dav_svn.conf mode=0644 owner=root group=root
   notify: restart_apache
-#TODO setup pre-commit
 
-#TODO migretion svn
-#TODO migretion redmine
+- name: Copy pre-commit
+  file: path=/etc/subversion/hooks state=directory owner=root group=root mode=0755
+- copy: src=pre-commit dest=/etc/subversion/hooks/pre-commit mode=0755 owner=root group=root
+
+- name: Copy copyCommonHooks.sh
+  copy: src=copyCommonHooks.sh dest=/var/svn/copyCommonHooks.sh mode=0755 owner=www-data group=www-data
